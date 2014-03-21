@@ -1,28 +1,6 @@
 /**
-    MIT License
-    ===========
-
-    Copyright (c) 2012-2013 Serban Ghita <serbanghita@gmail.com>
-
-    Permission is hereby granted, free of charge, to any person obtaining a
-    copy of this software and associated documentation files (the "Software"),
-    to deal in the Software without restriction, including without limitation
-    the rights to use, copy, modify, merge, publish, distribute, sublicense,
-    and/or sell copies of the Software, and to permit persons to whom the
-    Software is furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-    DEALINGS IN THE SOFTWARE.
-
-    jQuery Mobile dynamic popup
+    Copyright (c) 2012-2014 Serban Ghita <serbanghita@gmail.com>
+    jQuery Mobile dynamic popup. MIT Licensed
 */
 
 (function($){
@@ -30,33 +8,37 @@
     function dynamicPopup(){
 
         var settings,
-            openSettings,
-            $wrappers,
             $popup,
-            self        = this,
+            $popupMain,
+            $popupContent,
+            $popupCloseBtn,
             $activePage = $.mobile.activePage;
 
-        this.init = function(generalOptions, openOptions){
+        this.init = function( options ){
 
             // Extend the general settings.
             settings = $.extend({
                                     content: '',
                                     popupId: 'popup' + $activePage.attr('id'),
-                                    closeBtnLabel: 'Okay',
-                                    history: false
-                                }, generalOptions);
+                                    'data-theme': 'a',
+                                    'data-overlay-theme': 'none',
+                                    'data-position-to': 'window',
+                                    'data-rel': 'back',
+                                    'data-dismissible': true,
+                                    'data-transition': 'none',
+                                    'data-arrow': false
+                                },
+                                options);
 
-            // Extend the popup's open method settings.
-            openSettings = $.extend({
-                                    positionTo: 'window'
-                                }, openOptions);
+            // Sending a plain text or HTML message.
+            if(typeof options === 'string'){
+                settings.content = options;
+            }
 
-            if(typeof generalOptions === 'string'){ settings.content = generalOptions; }
-
-            self.setPopupWrappers();
-            self.popupatePopupContent();
-            self.putPopupInDOM();
-            self.openPopup();
+            this.createPopupElements();
+            this.populatePopupContent();
+            this.putPopupInDOM();
+            this.openPopup();
 
             return $popup;
 
@@ -64,57 +46,61 @@
 
         // Create the popup objects without the actual contents.
         // If the popup container exists return it's objects.
-        this.setPopupWrappers = function(){
+        this.createPopupElements = function(){
 
             $popup = $('#' + settings.popupId);
 
             // New popup, it doesn't exist.
-            if($popup.length == 0){
+            if( !$popup.length ){
 
                 // Create the generic popup elements.
-                $wrappers = {
-                              main:       $('<div></div>').attr({ 'id': settings.popupId, 'data-role': 'popup', 'data-theme': 'b', 'data-overlay-theme': 'b' }),
-                              content:    $('<div></div>').attr({ 'data-role': 'content' }).addClass('ui-content content'),
-                              closeX:     $('<a></a>').attr({ 'href': '#', 'data-role': 'button', 'data-rel': 'back', 'data-icon': 'delete', 'data-iconpos': 'notext' }).addClass('ui-btn-right closeX').html('Close').button(),
-                              closeBtn:   $('<a></a>').attr({ 'href': '#', 'data-inline': true, 'data-rel': 'back', 'data-icon': 'check', 'data-iconpos': 'right', 'data-theme': 'e' }).addClass('closeBtn').html(settings.closeBtnLabel).button()
-                            };
+                $popupMain =  $('<div></div>').attr({
+                                                    'id': settings.popupId,
+                                                    'data-role': 'popup',
+                                                    'data-theme': settings['data-theme'],
+                                                    'data-position-to': settings['data-position-to'],
+                                                    'data-dismissible': settings['data-dismissible'],
+                                                    'data-transition': settings['data-transition'],
+                                                    'data-arrow': settings['data-arrow']
+                                            })
+                                            .addClass('ui-popup-main');
+
+                $popupContent = $('<div></div>').attr({
+                                                        'data-role': 'content'
+                                                    })
+                                                    .addClass('ui-content ui-popup-content');
+
+                $popupCloseBtn = $('<a></a>').attr({
+                                                'href': '#',
+                                                'data-role': 'button',
+                                                'data-rel': settings['data-rel']
+                                            })
+                                            .addClass('ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right ui-popup-close-btn');
 
             } else {
 
                 // Find the existing HTML wrappers.
-                $wrappers = {
-                              main:       $popup,
-                              content:    $popup.find('.content'),
-                              closeX:     $popup.find('.closeX'),
-                              closeBtn:   $popup.find('.closeBtn')
-                            };
+                $popupMain = $popup;
+                $popupContent = $popup.find('.ui-popup-content');
+                $popupCloseBtn = $popup.find('.ui-popup-close-btn');
 
             }
-
-            // Apply all possible callback helpers.
-            //if(self.settings.helpers){
-
-            //    $.each(self.settings.helpers, function(i, helper){
-            //        this.apply(self.el[i]);
-            //    });
-
-            //}
 
 
         }
 
         // Populate the popup's content.
-        this.popupatePopupContent = function(){
+        this.populatePopupContent = function(){
 
             // 1. Static HTML string.
             if(typeof settings.content === 'string'){
-                $wrappers.content.html(settings.content);
+                $popupContent.html( settings.content );
             }
 
             // 2. jQuery object.
             if(settings.content instanceof jQuery){
                 // Grab the content inside the wrapper.
-                $wrappers.content.html(settings.content.html());
+                $popupContent.html( settings.content.html() );
             }
 
         }
@@ -125,11 +111,10 @@
             $popup.remove();
 
             // Tie together the HTML elements.
-            $wrappers.main.append($wrappers.closeX);
-            $wrappers.main.append($wrappers.content).append($wrappers.closeBtn);
+            $popupMain.append( $popupCloseBtn ).append( $popupContent );
 
             // Append the popup to the current page.
-            $activePage.append($wrappers.main);
+            $activePage.append( $popupMain );
 
         }
 
@@ -137,20 +122,20 @@
 
             // Init.
             $popup = $('#' + settings.popupId);
-            $popup.popup(settings);
+            $popup.popup( settings );
 
             // Open.
-            $popup.popup('open', openSettings);
+            $popup.popup('open');
 
         }
 
     }
 
     // Register the plugin.
-    $.dynamic_popup = function(generalOptions, openOptions){
+    $.dynamic_popup = function( options ){
 
         var popup = new dynamicPopup();
-        return popup.init(generalOptions, openOptions);
+        return popup.init( options );
 
     }
 
