@@ -2,41 +2,56 @@
 
 ##### Example
 
-Include the plugin:
+Include the required files:
+
 ```html
+<script src="js/jquery.min.js"></script>
+<script src="js/jquery.mobile.min.js"></script>
 <script src="js/jquery.mobile.dynamic.popup.js"></script>
 ```
 
-Simple alert example:
+Simple text alert:
 ```javascript
 $.dynamic_popup('This is a basic help message. Did you get it?');
 ```
 
-Add HTML to your messages:
+Add HTML and events to your popups:
 ```javascript
 $.dynamic_popup('Enter your <b>name</b> and <b>email</b> before submitting the form.');
-```
 
-Add custom messages:
-```javascript
 $.dynamic_popup({
     content: '<p>' + $('#name').val() + ', you have successfully registered!' + '</p>',
-    closeBtnLabel: 'Nice!'
+    'data-transition': 'slideup',
+    'data-position-to': '#Register'
 })
 .bind({
+    popupafteropen: function(e){
+        console.log('Opened the popup!');
+    },
     popupafterclose: function(e){
         $.mobile.changePage('#thankyouPage');
     }
 });
 ```
 
-##### Screenshots
+##### Configuration
 
-<img src="http://ghita.org/sites/default/files/articles_imgs/jqmpopup-1.png">
+```javascript
+// Default configuration.
+$.dynamic_popup({
+    content: '',
+    popupId: 'popup' + $activePage.attr('id'),
+    'data-theme': 'a',
+    'data-overlay-theme': 'none',
+    'data-position-to': 'window',
+    'data-rel': 'back',
+    'data-dismissible': true,
+    'data-transition': 'none',
+    'data-arrow': false
+});
+```
 
-<img src="http://ghita.org/sites/default/files/articles_imgs/jqmpopup-2.png">
-
-<img src="http://ghita.org/sites/default/files/articles_imgs/jqmpopup-3.png">
+You can find more about these configuration options on the official jQuery mobile popup docs: http://demos.jquerymobile.com/1.4.2/popup/
 
 ##### Contribute
 
