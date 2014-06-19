@@ -58,6 +58,7 @@
                                                     'id': settings.popupId,
                                                     'data-role': 'popup',
                                                     'data-theme': settings['data-theme'],
+                                                    'data-overlay-theme': settings['data-overlay-theme'],
                                                     'data-position-to': settings['data-position-to'],
                                                     'data-dismissible': settings['data-dismissible'],
                                                     'data-transition': settings['data-transition'],
